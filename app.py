@@ -191,7 +191,12 @@ def favicon():
     buf = io.BytesIO()
     img.save(buf, format='PNG')
     buf.seek(0)
-    return send_file(buf, mimetype='image/png')
+    return send_file(
+        buf,
+        mimetype='image/png',
+        as_attachment=True,
+        download_name='favicon.png'
+    )
 
 @app.route('/favicon.ico')
 def favicon_ico():
