@@ -193,9 +193,8 @@ def favicon():
     buf.seek(0)
     return send_file(
         buf,
-        mimetype='image/png',
-        as_attachment=True,
-        download_name='favicon.png'
+        mimetype='image/png'
+        # as_attachment와 download_name 옵션 제거
     )
 
 @app.route('/favicon.ico')
