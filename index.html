@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Favicon Maker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans KR', 'Nanum Gothic', 'Spoqa Han Sans Neo', Arial, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%);
+        }
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: #fff;
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(60, 80, 120, 0.15);
+            padding: 40px 32px 32px 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 320px;
+            max-width: 95vw;
+        }
+        h2 {
+            margin-top: 0;
+            color: #3a4668;
+            font-size: 2rem;
+            letter-spacing: -1px;
+        }
+        .input-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 18px;
+            width: 100%;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        #text {
+            font-size: 1.1rem;
+            padding: 10px 14px;
+            border: 1.5px solid #cfd8dc;
+            border-radius: 8px;
+            outline: none;
+            width: 180px;
+            transition: border 0.2s;
+        }
+        #text:focus {
+            border: 1.5px solid #7b9acc;
+        }
+        #generate-btn {
+            background: linear-gradient(90deg, #6a9cf7 0%, #4fd1c5 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 22px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(80, 120, 200, 0.08);
+            transition: background 0.2s, transform 0.1s;
+        }
+        #generate-btn:hover {
+            background: linear-gradient(90deg, #4fd1c5 0%, #6a9cf7 100%);
+            transform: translateY(-2px) scale(1.04);
+        }
+        .format-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+        .preview-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+        #preview {
+            display: block;
+            margin: 0 auto 10px auto;
+            border-radius: 16px;
+            border: 2.5px solid #e0e7ef;
+            box-shadow: 0 4px 16px rgba(80, 120, 200, 0.10);
+            width: 128px;
+            height: 128px;
+            background: #f4f6fa;
+            object-fit: contain;
+        }
+        #download {
+            display: inline-block;
+            margin-top: 4px;
+            color: #4fd1c5;
+            font-weight: bold;
+            text-decoration: none;
+            font-size: 1rem;
+            border-bottom: 1px dashed #4fd1c5;
+            transition: color 0.2s, border-bottom 0.2s;
+        }
+        #download:hover {
+            color: #6a9cf7;
+            border-bottom: 1px solid #6a9cf7;
+        }
+        @media (max-width: 480px) {
+            .container {
+                padding: 18px 4vw 18px 4vw;
+                min-width: unset;
+            }
+            h2 {
+                font-size: 1.3rem;
+            }
+            #preview {
+                width: 96px;
+                height: 96px;
+            }
+            .input-row {
+                flex-direction: column;
+                gap: 8px;
+            }
+            .format-row {
+                flex-direction: column;
+                gap: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>텍스트 → 랜덤 파비콘 생성기</h2>
+        <div class="input-row">
+            <input type="text" id="text" placeholder="텍스트를 입력하세요">
+            <button id="generate-btn" onclick="generate()">랜덤 만들기</button>
+        </div>
+        <div class="format-row">
+            <label><input type="radio" name="format" value="png" checked> PNG로 저장</label>
+            <label><input type="radio" name="format" value="ico"> ICO로 저장</label>
+        </div>
+        <div class="preview-area">
+            <img id="preview" width="128" height="128" alt="파비콘 미리보기">
+            <a id="download" download="favicon.png">이미지 다운로드</a>
+            <div style="margin-top:12px; display:flex; gap:8px;">
+                <button id="fb-share-btn" style="background:#4267B2;color:#fff;border:none;border-radius:6px;padding:8px 14px;font-weight:bold;cursor:pointer;">
+                    페이스북
+                </button>
+                <button id="tw-share-btn" style="background:#1da1f2;color:#fff;border:none;border-radius:6px;padding:8px 14px;font-weight:bold;cursor:pointer;">
+                    트위터
+                </button>
+                <button id="kakao-share-btn" style="background:#fee500;color:#3c1e1e;border:none;border-radius:6px;padding:8px 14px;font-weight:bold;cursor:pointer;">
+                    카카오톡
+                </button>
+            </div>
+        </div>
+    </div>
+    <script>
+        function generate() {
+            const text = document.getElementById('text').value;
+            const format = document.querySelector('input[name="format"]:checked').value;
+            let url = `/favicon?text=${encodeURIComponent(text)}`;
+            if (format === 'ico') url += '&format=ico';
+            fetch(url)
+                .then(res => res.blob())
+                .then(blob => {
+                    const fileExt = (format === 'ico') ? 'ico' : 'png';
+                    const fileName = `favicon.${fileExt}`;
+                    const objUrl = URL.createObjectURL(blob);
+                    document.getElementById('preview').src = objUrl;
+                    const downloadLink = document.getElementById('download');
+                    downloadLink.href = objUrl;
+                    downloadLink.download = fileName;
+                });
+        }
+        // 엔터키로도 생성
+        document.getElementById('text').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') generate();
+        });
+        // 페이지 진입시 기본 파비콘 미리보기
+        window.onload = generate;
+        document.getElementById('fb-share-btn').onclick = function() {
+            const shareUrl = encodeURIComponent(window.location.href);
+            window.open(
+                'https://www.facebook.com/sharer/sharer.php?u=' + shareUrl,
+                'facebook-share-dialog',
+                'width=600,height=400'
+            );
+        };
+        document.getElementById('tw-share-btn').onclick = function() {
+            const shareUrl = encodeURIComponent(window.location.href);
+            const text = encodeURIComponent('랜덤 파비콘을 만들어보세요!');
+            window.open(
+                `https://twitter.com/intent/tweet?url=${shareUrl}&text=${text}`,
+                'twitter-share-dialog',
+                'width=600,height=400'
+            );
+        };
+        document.getElementById('kakao-share-btn').onclick = function() {
+            // 카카오톡은 공식적으로 JS SDK를 써야 하지만, 간단하게 링크 복사 안내
+            const url = window.location.href;
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(url).then(function() {
+                    alert('링크가 복사되었습니다. 카카오톡 대화창에 붙여넣기 하세요!');
+                });
+            } else {
+                prompt('아래 링크를 복사하세요', url);
+            }
+        };
+    </script>
+</body>
+</html>
